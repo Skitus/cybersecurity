@@ -1,91 +1,186 @@
-# CyberDefenders — Network Traffic Analysis with Wireshark
+# Network Forensics — Wireshark and Process Analysis
 
 **Date studied:** 2025-05
-**Platform:** CyberDefenders (cyberdefenders.org)
-**Lab:** Amaury (Network Forensics)
-**Category:** Network Forensics / Blue Team / Traffic Analysis
-**Difficulty:** Beginner–Intermediate
+**Platform:** CyberDefenders + custom Claude labs
+**Lab:** Amadey malware analysis
+**Category:** Network Forensics / Memory Forensics / Blue Team
 **Status:** In Progress
-
----
-
-## What This Is
-
-CyberDefenders is a blue team training platform with real-world forensics labs.
-The Amaury lab focuses on network traffic analysis using pre-captured `.pcap` dump files.
-Goal: answer specific questions by analyzing what happened on the network.
 
 ---
 
 ## What Was Done
 
-- Set up Wireshark on local machine
-- Worked with a pre-captured network dump (`.pcap` file)
-- Two approaches used:
-  - **Option A** — continued the Amaury lab directly on CyberDefenders (dump already available in the platform)
-  - **Option B** — downloaded the dump file locally and analyzed in Wireshark
+Analyzed a Windows system infected with the **Amadey** malware family.
+Compared process lists from a clean machine vs an infected machine to identify malicious indicators.
+Practiced network traffic analysis across 8+ different PCAP scenarios.
 
 ---
 
-## Wireshark Basics Practiced
+## Amadey Malware — Process Analysis
 
-**Filters used:**
+Comparison between a clean machine and an infected machine:
+
+| Process | Clean Machine | Infected Machine |
+|---|---|---|
+| msedge.exe | normal | - |
+| explorer.exe | normal | - |
+| Signal.exe | normal | - |
+| OneDrive.exe | normal | - |
+| lsass.exe | - | **lssass.exe** — typosquatting lsass (double s) |
+| path | normal system paths | **C:\Temp\925e7e99c5\lssass.exe** — runs from Temp |
+| rundll32 | - | **loads clip64.dll** — suspicious DLL |
+| cmd.exe | - | **spawned at 21:50** — unexpected shell |
+
+### What Each Indicator Means
+
+**lssass.exe masquerading as lsass.exe**
+- `lsass.exe` is a legitimate Windows process (Local Security Authority)
+- Malware adds an extra `s` to the name to fool analysts at a glance
+- Running from `C:\Temp\` instead of `C:\Windows\System32\` — immediate red flag
+- Any process in `C:\Temp\` is suspicious
+
+**rundll32 loading clip64.dll**
+- `rundll32.exe` is used to run DLL files as executables
+- Attackers abuse it to execute malicious DLLs without creating a new `.exe`
+- `clip64.dll` is not a standard Windows DLL
+
+**cmd.exe spawned at 21:50**
+- Unexpected command shell at a specific time suggests scheduled task or malware trigger
+- Parent process matters: cmd.exe spawned by malware is a sign of lateral movement or persistence
+
+---
+
+## Live Network Analysis
+
+Command used to see active connections on Windows:
+
+```powershell
+netstat -ano | Select-String "ESTABLISHED"
+```
+
+What it shows:
+- All established TCP connections
+- Local address and port
+- Remote IP address and port
+- PID of the process owning the connection
+
+Cross-reference the PID with Task Manager or `Get-Process -Id <PID>` to find which process is connecting where.
+
+This is the live equivalent of `windows.netscan` in Volatility (which does the same from a memory dump).
+
+---
+
+## Volatility — Memory Forensics Commands
+
+Volatility is used to analyze memory dumps (`.dmp`, `.mem`, `.raw` files).
+
+```bash
+# List all running processes
+volatility -f memory.dmp windows.pslist
+
+# Show process tree (parent-child relationships)
+volatility -f memory.dmp windows.pstree
+
+# Find network connections (equivalent of netstat)
+volatility -f memory.dmp windows.netscan
+
+# Show command line used to launch each process
+volatility -f memory.dmp windows.cmdline
+
+# List DLLs loaded by each process
+volatility -f memory.dmp windows.dlllist
+
+# Find injected code in process memory
+volatility -f memory.dmp windows.malfind
+
+# Dump a specific process to disk
+volatility -f memory.dmp windows.dumpfiles --pid <PID>
+
+# Check for hidden processes (rootkits)
+volatility -f memory.dmp windows.psxview
+```
+
+### Red Flags in Volatility Output
+
+- Process running from `C:\Temp\`, `C:\Users\AppData\`, or random paths
+- Typosquatted process names (lssass, scvhost, svhost)
+- `cmd.exe` or `powershell.exe` as child of a browser or Office process
+- Network connections from unexpected processes (e.g., Word.exe connecting to an IP)
+- `rundll32.exe` with suspicious DLL arguments
+
+---
+
+## PCAP Labs Practiced
+
+Files are in: `./pcap-files/`
+
+### 1. Malware Traffic
+- Look for: periodic beacons (C2 heartbeat at fixed intervals), DNS queries to random domains, POST requests with encoded data
+- Filter: `http.request.method == "POST"` / `dns`
+
+### 2. VoIP Analysis
+- Look for: SIP REGISTER/INVITE packets, RTP audio streams
+- Filter: `sip` / `rtp`
+- Can extract audio from RTP streams: Telephony > RTP > Stream Analysis
+
+### 3. LLMNR Poisoning
+- LLMNR = Link-Local Multicast Name Resolution (Windows name resolution fallback)
+- Attacker responds to LLMNR queries and captures NTLMv2 hashes
+- Tool used by attackers: Responder
+- Filter: `llmnr` / `nbns`
+
+### 4. DNS Tunneling
+- Data exfiltration or C2 hidden inside DNS queries
+- Queries are abnormally long (> 50 chars in subdomain)
+- High volume of TXT record requests
+- Filter: `dns` then look at query lengths
+
+### 5. Web Attack Traffic
+- Look for: SQLi payloads in URLs (`UNION SELECT`, `' OR 1=1`), directory traversal (`../../../`), XSS (`<script>`)
+- Filter: `http` then inspect URIs
+
+### 6. WiFi Analysis
+- 802.11 frames, deauthentication attacks (deauth flood = DoS)
+- WPA2 handshake capture (4-way handshake = crackable offline)
+- Filter: `wlan`
+
+### 7. Attack CTF
+- Port scan signatures: many SYN packets to sequential ports from one IP
+- Exploit attempts: unusual payloads in TCP streams
+- Filter: `tcp.flags.syn == 1 && tcp.flags.ack == 0`
+
+---
+
+## Wireshark Core Filters Reference
 
 ```
-# Filter by IP
-ip.addr == 192.168.1.1
+# By IP
+ip.addr == 10.0.0.1
+ip.src == 10.0.0.1
+ip.dst == 10.0.0.1
 
-# Filter by protocol
-tcp
-udp
+# By protocol
 http
 dns
+ftp
+smtp
+smb
 
-# Filter by port
-tcp.port == 80
-tcp.port == 443
+# By port
+tcp.port == 4444
+udp.port == 53
 
-# Follow a TCP stream
-Right-click a packet > Follow > TCP Stream
+# Find SYN scans
+tcp.flags.syn == 1 && tcp.flags.ack == 0
 
-# Find credentials in plain HTTP
+# Find POST requests
 http.request.method == "POST"
+
+# Exclude noise
+not arp and not icmp
+
+# Follow a stream: right-click > Follow > TCP Stream
 ```
-
-**Key Wireshark features:**
-- Statistics > Protocol Hierarchy — see what protocols are in the capture
-- Statistics > Conversations — see which IPs were talking to each other
-- File > Export Objects > HTTP — extract files transferred over HTTP
-- Follow TCP/UDP Stream — reconstruct full conversations
-
----
-
-## What to Look For in a Network Dump
-
-| Indicator | What It Means |
-|---|---|
-| DNS queries to unknown domains | Possible C2 beaconing |
-| Large data uploads (POST requests) | Possible data exfiltration |
-| Connections to unusual ports | Backdoor or tunneling |
-| Repeated requests at fixed intervals | Malware heartbeat / beacon |
-| Unencrypted credentials | HTTP Basic Auth, FTP, Telnet |
-
----
-
-## Key Concepts Learned
-
-**PCAP Analysis Workflow:**
-1. Open dump in Wireshark
-2. Check Statistics > Protocol Hierarchy (understand the traffic mix)
-3. Check Statistics > Conversations (find the main IPs involved)
-4. Filter by suspicious protocols or ports
-5. Follow streams to reconstruct what happened
-6. Export files if needed
-
-**Blue Team vs Red Team:**
-- Red Team (attacker) creates the traffic
-- Blue Team (defender) analyzes it after the fact
-- SOC analysts do this daily with real enterprise traffic
 
 ---
 
@@ -93,14 +188,16 @@ http.request.method == "POST"
 
 | Tool | Purpose |
 |---|---|
-| Wireshark | Primary traffic analysis tool |
-| CyberDefenders platform | Lab environment and questions |
-| tshark | Command-line version of Wireshark (for scripting) |
+| Wireshark | PCAP analysis, traffic inspection |
+| Volatility 3 | Memory dump analysis |
+| netstat -ano | Live network connection enumeration |
+| CyberDefenders | Lab platform |
 
 ---
 
 ## References
 
-- [CyberDefenders](https://cyberdefenders.org)
-- [Wireshark Documentation](https://www.wireshark.org/docs/)
-- [Wireshark Display Filters Reference](https://www.wireshark.org/docs/dfref/)
+- [CyberDefenders Amadey Lab](https://cyberdefenders.org)
+- [Volatility 3 Docs](https://volatility3.readthedocs.io)
+- [Wireshark Display Filters](https://www.wireshark.org/docs/dfref/)
+- [Amadey malware analysis — ANY.RUN](https://any.run/malware-trends/amadey)
