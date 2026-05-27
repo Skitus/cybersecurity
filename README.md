@@ -1,38 +1,53 @@
-# 🔐 Cybersecurity Notes
+# Cybersecurity Notes
 
-Персональная база знаний по кибербезопасности.  
-Ведётся в [Obsidian](https://obsidian.md), синхронизируется с GitHub.
+Personal knowledge base. Notes from labs, real-world case studies, and research.
+Written in Obsidian, synced to GitHub.
 
-## 📁 Структура
+---
+
+## Completed Work
+
+### Malware Analysis
+- **3CX Supply Chain Attack** — analyzed trojanized `ffmpeg.dll`, traced C2 communication via `.ico` files on GitHub, VirusTotal investigation
+
+### Network Forensics
+- **Wireshark + CyberDefenders** — network traffic analysis using `.pcap` dumps, Amaury lab on CyberDefenders platform
+
+### OSINT / Reconnaissance
+- **Critical Infrastructure Research** — mapped wastewater treatment facilities using OpenStreetMap, studied ICS/SCADA attack surface
+
+---
+
+## Structure
 
 ```
 cybersec/
-├── 00-MOC/              # Maps of Content — навигационные заметки
-├── 01-Networking/       # Сети: TCP/IP, DNS, HTTP, Wireshark
-├── 02-Linux/            # Linux: команды, bash, права доступа
-├── 03-Web-Security/     # OWASP Top 10, XSS, SQLi, CSRF
-├── 04-Cryptography/     # Шифрование, хэши, PKI, TLS
-├── 05-Tools/            # Nmap, Burp Suite, Metasploit, etc.
-├── 06-CTF/              # CTF writeups и задания
-├── 07-Certifications/   # Подготовка к сертификациям (CEH, OSCP...)
-└── 99-Inbox/            # Быстрые заметки (разобрать позже)
+├── 00-MOC/              # Navigation notes
+├── 01-Networking/       # Networking fundamentals
+├── 02-Linux/            # Linux and bash
+├── 03-Web-Security/     # OWASP, XSS, SQLi, CSRF
+├── 04-Cryptography/     # Encryption, hashes, TLS
+├── 05-Tools/            # Nmap, Burp Suite, Metasploit
+├── 06-CTF/              # CTF writeups and lab notes
+├── 07-Certifications/   # Certification prep
+├── 08-Malware-Analysis/ # Malware samples and case studies
+├── 09-OSINT/            # Open-source intelligence
+└── 99-Inbox/            # Quick notes to sort later
 ```
 
-## 🚀 Как синхронизировать
+---
+
+## Platforms Used
+
+- [CyberDefenders](https://cyberdefenders.org) — blue team labs
+- [TryHackMe](https://tryhackme.com) — guided learning paths
+- [VirusTotal](https://www.virustotal.com) — file and URL analysis
+
+---
+
+## How to Sync
 
 ```bash
-# Быстрое сохранение всего
-./sync.sh "описание изменений"
-
-# Или вручную
-git add .
-git commit -m "update notes"
-git push
+cd /Users/skitus/work/cybersec
+./sync.sh "brief description of what was added"
 ```
-
-## 📚 Ресурсы
-
-- [TryHackMe](https://tryhackme.com)
-- [HackTheBox](https://hackthebox.com)
-- [PortSwigger Web Security Academy](https://portswigger.net/web-security)
-- [OWASP](https://owasp.org)
