@@ -1,77 +1,50 @@
-# Cybersecurity Notes and Lab Portfolio
+# Cybersecurity Notes
 
-Personal knowledge base and lab writeups.
-Notes from completed CTF labs, real-world case studies, and research.
-Written in Obsidian, synced to GitHub.
+Personal lab notes and writeups.
+Profile: https://cyberdefenders.org/p/artur.demenskiy03/
 
 ---
 
-## CyberDefenders — 9 Labs Completed
+## PCAP Analysis Labs
 
-Profile: https://cyberdefenders.org/p/artur.demenskiy03/
+Real network captures analyzed in Wireshark.
 
-| Lab | Category | Tools |
+| Lab | Attack | Tools |
 |---|---|---|
-| Red Stealer | Threat Intel | VirusTotal, ANY.RUN, MalwareBazaar |
-| Yellow RAT | Threat Intel | VirusTotal, Red Canary |
-| Oski | Threat Intel | VirusTotal, ANY.RUN (Stealc analysis) |
-| Lespion | OSINT / Threat Intel | Sherlock, GitHub, Google |
-| PsExec Hunt | Network Forensics | Wireshark (SMB/lateral movement) |
-| PoisonedCredentials | Network Forensics | Wireshark (LLMNR poisoning) |
-| WebStrike | Network Forensics | Wireshark (web shell, reverse shell) |
-| The Crime | Endpoint Forensics | ALEAPP, SQLite Browser (Android) |
-| Amadey - APT-C-36 | Endpoint Forensics | Volatility 3 (memory dump) |
+| [CTF Challenge](06-CTF/pcap-ctf-challenge.md) | FTP/HTTP/Telnet cleartext | Wireshark |
+| [DNS Tunnel](06-CTF/pcap-dns-tunnel.md) | Data exfil via DNS base64 | Wireshark, base64 |
+| [Web Attack](06-CTF/pcap-webattack.md) | SQLi + .env leak | Wireshark, sqlmap |
+| [LLMNR Poisoning](06-CTF/pcap-llmnr.md) | NTLMv2 hash capture | Wireshark, hashcat |
+| [SSH Brute Force](06-CTF/pcap-attack.md) | Port scan + credential stuffing | Wireshark |
+| [WiFi Attack](06-CTF/pcap-wifi.md) | Deauth + WPA2 handshake | Wireshark, hashcat |
+| [Malware C2](06-CTF/pcap-malware.md) | C2 beaconing detection | Wireshark |
+| [VoIP](06-CTF/pcap-voip.md) | SIP/RTP call interception | Wireshark |
 
-Full writeups: [06-CTF/CyberDefenders-Profile.md](06-CTF/CyberDefenders-Profile.md)
+---
+
+## CyberDefenders Labs — 9 Completed
+
+[Full writeups](06-CTF/CyberDefenders-Profile.md)
+
+Red Stealer, Yellow RAT, Oski, Lespion, PsExec Hunt, PoisonedCredentials, WebStrike, The Crime, Amadey APT-C-36
 
 ---
 
 ## Case Studies
 
-- [3CX Supply Chain Attack](08-Malware-Analysis/3CX-Supply-Chain-Attack.md) — DLL side-loading, C2 via steganography in .ico files, VirusTotal investigation
-- [Critical Infrastructure OSINT](09-OSINT/Critical-Infrastructure-Reconnaissance.md) — ICS/SCADA attack surface, OpenStreetMap recon, wastewater facilities
+- [3CX Supply Chain Attack](08-Malware-Analysis/3CX-Supply-Chain-Attack.md)
+- [Critical Infrastructure OSINT](09-OSINT/Critical-Infrastructure-Reconnaissance.md)
 
 ---
 
-## Tools Reference
+## Tools
 
-- [Volatility 3](05-Tools/Volatility.md) — memory forensics commands and red flags
-- [Wireshark](06-CTF/CyberDefenders-Network-Analysis-Wireshark.md) — filters, PCAP analysis workflow
-
----
-
-## Skills
-
-- Threat Intelligence: IOC extraction, MITRE ATT&CK mapping, sandbox analysis (ANY.RUN)
-- Network Forensics: PCAP analysis, SMB/LLMNR/HTTP attack detection
-- Endpoint Forensics: Windows memory analysis (Volatility), Android forensics (ALEAPP)
-- OSINT: username correlation (Sherlock), GitHub credential hunting, geolocation
-- Malware Analysis: static analysis, DLL side-loading, C2 infrastructure
+- [Volatility 3](05-Tools/Volatility.md) — memory forensics
 
 ---
 
-## Structure
-
-```
-cybersec/
-├── 00-MOC/              # Navigation
-├── 01-Networking/       # Networking fundamentals
-├── 02-Linux/            # Linux and bash
-├── 03-Web-Security/     # OWASP, XSS, SQLi
-├── 04-Cryptography/     # Encryption, hashes, TLS
-├── 05-Tools/            # Volatility, Nmap, Burp Suite
-├── 06-CTF/              # CyberDefenders labs and PCAP files
-├── 07-Certifications/   # Certification prep
-├── 08-Malware-Analysis/ # Malware case studies
-├── 09-OSINT/            # OSINT research
-└── 99-Inbox/            # Unsorted notes
-```
-
----
-
-## Sync to GitHub
+## Sync
 
 ```bash
-cd /Users/skitus/work/cybersec
-./sync.sh "description of changes"
+cd /Users/skitus/work/cybersec && ./sync.sh "description"
 ```
