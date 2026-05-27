@@ -1,1 +1,4 @@
-{}
+{
+  "showUnsupportedFiles": true,
+  "attachmentFolderPath": "labs/pcap-files"
+}
