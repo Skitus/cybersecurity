@@ -1,9 +1,5 @@
-# Obsidian workspace settings (local only)
-.obsidian/workspace.json
-.obsidian/workspace-mobile.json
-
-# Obsidian cache
-.obsidian/cache
+# Obsidian (local only)
+.obsidian/
 
 # OS files
 .DS_Store
